@@ -172,7 +172,21 @@ def ensure_sqlite_columns():
 ensure_sqlite_columns()
 
 app = FastAPI(title="BHARATSHIELD API", version="2.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    # Vercel preview and production deployments
+    "https://bharatshield.vercel.app",
+]
+# Allow all *.vercel.app preview URLs automatically.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_CORS_ORIGINS,
+    allow_origin_regex=r"https://bharatshield.*\.vercel\.app",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 

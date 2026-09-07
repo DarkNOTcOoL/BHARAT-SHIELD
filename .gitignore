@@ -115,3 +115,19 @@ logs/
 *.log
 tmp/
 temp/
+
+# ======================
+# BHARATSHIELD — Project Specific
+# ======================
+# SQLite database (generated at runtime)
+backend/bharatshield.db
+*.db
+
+# User-uploaded documents (runtime artifacts, not source)
+backend/uploads/
+
+# Backend secrets
+backend/.env
+
+# Vercel build cache
+.vercel/
