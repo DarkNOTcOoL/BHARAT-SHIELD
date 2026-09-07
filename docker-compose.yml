@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: bharatshield-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bharatshield
+      POSTGRES_USER: bharatshield
+      POSTGRES_PASSWORD: bharatshield
+    ports:
+      - "5432:5432"
+    volumes:
+      - bharatshield_pgdata:/var/lib/postgresql/data
+volumes:
+  bharatshield_pgdata:

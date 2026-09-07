@@ -1,0 +1,17 @@
+-- BHARATSHIELD v2 reference + screening schema (SQLAlchemy creates tables automatically).
+-- Reference tables are trusted configuration/knowledge. Identity and watchlist demo rows
+-- are explicitly synthetic and must not be presented as government records.
+--
+-- Core reference tables:
+--   reference_countries
+--   document_rules
+--   issuer_records
+--   fraud_rules
+--   watchlist_records
+--   identity_records
+--
+-- Operational tables:
+--   officers
+--   screenings
+--   verification_results
+--   audit_logs

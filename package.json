@@ -1,0 +1,25 @@
+{
+  "name": "sih-identity-document-screening",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "postinstall": "node scripts/copy-ocr-assets.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.13.3",
+    "vite": "^5.4.10",
+    "tesseract.js": "^6.0.1",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "tesseract.js-core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4"
+  }
+}
