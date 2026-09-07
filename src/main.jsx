@@ -516,7 +516,7 @@ function Screening({screening,setScreening,setPage}) {
       const response=await fetch(`${API_BASE}/screening/batch`,{method:"POST",body:form});
       if(!response.ok){const body=await response.json().catch(()=>({}));throw new Error(body.detail||"Verification engine request failed");}
       const result=await response.json();
-      let i=2; const timer=setInterval(()=>{i++; if(i>=stages.length){clearInterval(timer);setStage("done");setScreening({...result.screenings[0],batch:result});}else setStage(i);},420);
+      let i=2; const timer=setInterval(()=\u003e{i++; if(i\u003e=stages.length){clearInterval(timer);const first=result?.screenings?.[0];if(!first){setStage("idle");setError("Verification engine returned an unexpected response. Check the backend is running.");return;}setStage("done");setScreening({...first,batch:result});}else setStage(i);},420);
     } catch(e){if(worker)await worker.terminate().catch(()=>{});setStage("idle");setError(e.message||"Screening failed");}
   };
 
@@ -818,4 +818,9 @@ function SettingsPage({profile,updateProfile}){
 }
 function SettingRow({label,value,good}){return <div className="setting-row"><span><i className={good?"green":""}/>{label}</span><strong>{value}</strong></div>}
 
-createRoot(document.getElementById("root")).render(<App />);
+const rootEl = document.getElementById("root");
+if (rootEl) {
+  createRoot(rootEl).render(<App />);
+} else {
+  console.error("[BHARATSHIELD] #root element not found — check index.html is being served correctly.");
+}

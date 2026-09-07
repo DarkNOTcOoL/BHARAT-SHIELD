@@ -7,6 +7,7 @@ import react from "@vitejs/plugin-react";
 // allow-list the Vite origin in CORS). This config restores the standard React plugin and
 // proxies /api and /uploads to the backend so VITE_API_BASE can simply be "/api" in dev.
 export default defineConfig({
+  base: "/",
   plugins: [react()],
   server: {
     port: 5173,
