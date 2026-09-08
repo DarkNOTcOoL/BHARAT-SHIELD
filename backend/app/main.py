@@ -693,7 +693,8 @@ def save_screening(db, file: UploadFile, data: bytes, metadata: dict, mode: str,
     safe_name = f"{uuid.uuid4().hex}_{Path(file.filename or 'document').name}"
     target = UPLOAD_DIR / safe_name
     target.write_bytes(data)
-    fields = {"name":metadata.get("name",""),"dob":metadata.get("dob",""),"nationality":metadata.get("nationality",""),"document_number":metadata.get("document_number",""),"expiry":metadata.get("expiry","")}
+    doc_type = metadata.get("type", "Passport")
+    fields = {"name":metadata.get("name",""),"dob":metadata.get("dob",""),"nationality":"INDIAN","document_number":metadata.get("document_number",""),"expiry":metadata.get("expiry","") if doc_type == "Passport" else "N/A"}
     ai_analysis = metadata.get("_ai_analysis")
     ai_status = metadata.get("_ai_status", "NOT_CONFIGURED")
     if ai_analysis and not isinstance(ai_analysis, dict):
@@ -701,7 +702,7 @@ def save_screening(db, file: UploadFile, data: bytes, metadata: dict, mode: str,
     # If the batch route has not already prepared AI output, prepare it here (legacy endpoint).
     if ai_analysis is None and groq_configured():
         try:
-            ai_analysis = groq_analyze_document(data, getattr(file, "content_type", None) or "image/jpeg", metadata.get("type", "Passport"), metadata.get("ocr_text", ""))
+            ai_analysis = groq_analyze_document(data, getattr(file, "content_type", None) or "image/jpeg", doc_type, metadata.get("ocr_text", ""))
             ai_status = "GROQ COMPLETE"
         except Exception as exc:
             ai_status = "GROQ ERROR / LOCAL FALLBACK"
@@ -712,13 +713,16 @@ def save_screening(db, file: UploadFile, data: bytes, metadata: dict, mode: str,
         ai_name = ai_analysis.get("full_name", "").strip()
         if ai_name and len(ai_name) >= 3: fields["name"] = ai_name
         if ai_analysis.get("date_of_birth"): fields["dob"] = ai_analysis["date_of_birth"]
-        if ai_analysis.get("nationality"): fields["nationality"] = ai_analysis["nationality"]
+        fields["nationality"] = "INDIAN"
         if ai_analysis.get("passport_or_document_number"): fields["document_number"] = ai_analysis["passport_or_document_number"]
-        if ai_analysis.get("date_of_expiry"): fields["expiry"] = ai_analysis["date_of_expiry"]
+        if doc_type == "Passport":
+            if ai_analysis.get("date_of_expiry"): fields["expiry"] = ai_analysis["date_of_expiry"]
+        else:
+            fields["expiry"] = "N/A"
         if ai_analysis.get("mrz_text") and not metadata.get("ocr_text"): metadata["ocr_text"] = ai_analysis["mrz_text"]
-    analysis = verify_document(db, fields, metadata.get("type", "Passport"), float(metadata.get("ocr_confidence",0) or 0), metadata.get("ocr_text",""), data, mode, cross_score, cross_findings, ai_analysis, ai_status)
+    analysis = verify_document(db, fields, doc_type, float(metadata.get("ocr_confidence",0) or 0), metadata.get("ocr_text",""), data, mode, cross_score, cross_findings, ai_analysis, ai_status)
     screening_code = f"SCR-{datetime.now().strftime('%y%m%d')}-{uuid.uuid4().hex[:4].upper()}"
-    s = Screening(screening_id=screening_code, case_id=case_id, verification_mode=mode, document_index=index, document_count=count, document_type=metadata.get("type","Passport"), original_filename=file.filename or "document", stored_path=str(target), document_hash=f"sha256:{digest}", risk=analysis["risk"], confidence=analysis["confidence"], recommendation=analysis["recommendation"], person_name=fields["name"].strip(), date_of_birth=fields["dob"].strip(), nationality=fields["nationality"].strip(), document_number=fields["document_number"].strip(), expiry_date=fields["expiry"].strip())
+    s = Screening(screening_id=screening_code, case_id=case_id, verification_mode=mode, document_index=index, document_count=count, document_type=doc_type, original_filename=file.filename or "document", stored_path=str(target), document_hash=f"sha256:{digest}", risk=analysis["risk"], confidence=analysis["confidence"], recommendation=analysis["recommendation"], person_name=fields["name"].strip(), date_of_birth=fields["dob"].strip(), nationality="INDIAN", document_number=fields["document_number"].strip(), expiry_date=fields["expiry"].strip() if doc_type == "Passport" else "N/A")
     s.result = VerificationResult(ocr_confidence=analysis["ocr"], authenticity_score=analysis["authenticity"], face_match_score=analysis["face"], database_match_score=analysis["database"], mrz_score=analysis["mrz"], field_consistency_score=analysis["field"], cross_document_score=analysis["cross"], forensic_score=analysis["forensic"], watchlist_status=analysis["watchlist"], duplicate_status=analysis["duplicate"], forgery_status=analysis["forgery"], details=analysis["details"], findings_json=json.dumps(analysis["findings"]), ocr_text=metadata.get("ocr_text","")[:20000], ocr_method="Tesseract.js + Verification Engine + Groq Vision", ai_status=analysis.get("ai_status", "NOT_CONFIGURED"), ai_analysis_json=json.dumps(analysis.get("ai_analysis", {}))[:30000])
     db.add(s); db.flush()
     return s
@@ -752,6 +756,9 @@ async def create_batch(
             data = await file.read()
             if len(data) > 10 * 1024 * 1024: raise HTTPException(400, f"{file.filename}: exceeds 10 MB.")
             meta["type"] = meta.get("type") or "Passport"
+            meta["nationality"] = "INDIAN"
+            if meta["type"] != "Passport":
+                meta["expiry"] = "N/A"
             # Run Groq once per document before cross-verification so AI-extracted fields can participate
             # in the cross-document comparison. If Groq is unavailable, local OCR remains the source.
             if groq_configured():
@@ -763,9 +770,12 @@ async def create_batch(
                     if not ai.get("error"):
                         if ai.get("full_name"): meta["name"] = ai["full_name"]
                         if ai.get("date_of_birth"): meta["dob"] = ai["date_of_birth"]
-                        if ai.get("nationality"): meta["nationality"] = ai["nationality"]
+                        meta["nationality"] = "INDIAN"
                         if ai.get("passport_or_document_number"): meta["document_number"] = ai["passport_or_document_number"]
-                        if ai.get("date_of_expiry"): meta["expiry"] = ai["date_of_expiry"]
+                        if meta["type"] == "Passport":
+                            if ai.get("date_of_expiry"): meta["expiry"] = ai["date_of_expiry"]
+                        else:
+                            meta["expiry"] = "N/A"
                 except Exception as exc:
                     # Keep the API response clean, but print the sanitized provider error to the
                     # backend terminal so integration failures can be diagnosed without exposing
@@ -906,4 +916,5 @@ def serialize_screening(s: Screening):
     try: findings = json.loads(r.findings_json or "[]") if r else []
     except Exception: findings = []
     band = score_band(s.confidence)
-    return {"id":s.screening_id,"case_id":s.case_id,"mode":s.verification_mode,"document_index":s.document_index,"document_count":s.document_count,"person":s.person_name or "Not detected","type":s.document_type,"number":s.document_number or "Not detected","date_of_birth":s.date_of_birth or "Not detected","nationality":s.nationality or "Not detected","expiry_date":s.expiry_date or "Not detected","risk":s.risk,"confidence":s.confidence,"score_band":band["band"],"score_band_label":band["label"],"score_band_message":band["message"],"status":s.status,"recommendation":s.recommendation,"filename":s.original_filename,"document_hash":s.document_hash,"created_at":s.created_at.isoformat() if s.created_at else None,"result":{"ocr_confidence":r.ocr_confidence if r else 0,"authenticity_score":r.authenticity_score if r else 0,"face_match_score":r.face_match_score if r else 0,"database_match_score":r.database_match_score if r else 0,"mrz_score":r.mrz_score if r else 0,"field_consistency_score":r.field_consistency_score if r else 0,"cross_document_score":r.cross_document_score if r else 0,"forensic_score":r.forensic_score if r else 0,"watchlist_status":r.watchlist_status if r else "PENDING","duplicate_status":r.duplicate_status if r else "PENDING","forgery_status":r.forgery_status if r else "PENDING","details":r.details if r else "","findings":findings,"ocr_text":r.ocr_text if r else "","ocr_method":r.ocr_method if r else "", "ai_status":r.ai_status if r else "NOT_CONFIGURED", "ai_analysis":(json.loads(r.ai_analysis_json or "{}") if r and r.ai_analysis_json else {})}}
+    expiry_val = (s.expiry_date or "Not detected") if (s.document_type or "").lower() == "passport" else "N/A"
+    return {"id":s.screening_id,"case_id":s.case_id,"mode":s.verification_mode,"document_index":s.document_index,"document_count":s.document_count,"person":s.person_name or "Not detected","type":s.document_type,"number":s.document_number or "Not detected","date_of_birth":s.date_of_birth or "Not detected","nationality":"INDIAN","expiry_date":expiry_val,"risk":s.risk,"confidence":s.confidence,"score_band":band["band"],"score_band_label":band["label"],"score_band_message":band["message"],"status":s.status,"recommendation":s.recommendation,"filename":s.original_filename,"document_hash":s.document_hash,"created_at":s.created_at.isoformat() if s.created_at else None,"result":{"ocr_confidence":r.ocr_confidence if r else 0,"authenticity_score":r.authenticity_score if r else 0,"face_match_score":r.face_match_score if r else 0,"database_match_score":r.database_match_score if r else 0,"mrz_score":r.mrz_score if r else 0,"field_consistency_score":r.field_consistency_score if r else 0,"cross_document_score":r.cross_document_score if r else 0,"forensic_score":r.forensic_score if r else 0,"watchlist_status":r.watchlist_status if r else "PENDING","duplicate_status":r.duplicate_status if r else "PENDING","forgery_status":r.forgery_status if r else "PENDING","details":r.details if r else "","findings":findings,"ocr_text":r.ocr_text if r else "","ocr_method":r.ocr_method if r else "", "ai_status":r.ai_status if r else "NOT_CONFIGURED", "ai_analysis":(json.loads(r.ai_analysis_json or "{}") if r and r.ai_analysis_json else {})}}

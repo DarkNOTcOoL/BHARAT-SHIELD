@@ -482,14 +482,22 @@ function Screening({ screening, setScreening, setPage }) {
       if (labeled) documentNumber = labeled.replace(/[^A-Z0-9]/gi, "").toUpperCase(); else if (m) documentNumber = m.replace(/[-\s]/g, "");
     }
     if (!documentNumber) { const v = labelValue("aadhaar|adhaar|uidai|epic|voter\\s*id|pan\\s*(?:no|number)?|passport\\s*(?:no|number)|document\\s*(?:no|number)|id\\s*(?:no|number)", 24); if (v) documentNumber = v.replace(/[^A-Z0-9]/gi, "").toUpperCase(); }
-    if (!nationality) { const v = labelValue("nationality|country code", 30); if (v) nationality = v.trim().toUpperCase(); }
+    // Nationality permanently resolves to "INDIAN"
+    nationality = "INDIAN";
+    const isPassport = type === "Passport";
     const datePattern = /\b(?:\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}|\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\s+\d{4})\b/gi;
     const dates = [...clean.matchAll(datePattern)].map(m => m[0]);
-    const dobLabel = clean.match(/(?:date of birth|dob)\s*[:#-]?\s*([^\n|]+)/i), expiryLabel = clean.match(/(?:date of expiry|expiry|expiration)\s*[:#-]?\s*([^\n|]+)/i);
+    const dobLabel = clean.match(/(?:date of birth|dob)\s*[:#-]?\s*([^\n|]+)/i);
     if (!dob && dobLabel) dob = (dobLabel[1].match(datePattern)?.[0] || dobLabel[1].trim()).trim();
-    if (!expiry && expiryLabel) expiry = (expiryLabel[1].match(datePattern)?.[0] || expiryLabel[1].trim()).trim();
-    if (!dob && dates[0]) dob = dates[0]; if (!expiry && dates[1]) expiry = dates[1];
-    return { name, dob, nationality, documentNumber, expiry };
+    if (!dob && dates[0]) dob = dates[0];
+    if (isPassport) {
+      const expiryLabel = clean.match(/(?:date of expiry|expiry|expiration)\s*[:#-]?\s*([^\n|]+)/i);
+      if (!expiry && expiryLabel) expiry = (expiryLabel[1].match(datePattern)?.[0] || expiryLabel[1].trim()).trim();
+      if (!expiry && dates[1]) expiry = dates[1];
+    } else {
+      expiry = "N/A";
+    }
+    return { name, dob, nationality: "INDIAN", documentNumber, expiry: isPassport ? (expiry || "") : "N/A" };
   };
 
   const addFiles = async selected => {
@@ -520,7 +528,7 @@ function Screening({ screening, setScreening, setPage }) {
       const form = new FormData();
       analyzed.forEach((d) => form.append("files", d.file));
       form.append("mode", mode);
-      form.append("documents_json", JSON.stringify(analyzed.map(d => ({ type: d.type, ocr_text: d.ocrText, ocr_confidence: d.ocrConfidence, name: d.fields?.name || "", dob: d.fields?.dob || "", nationality: d.fields?.nationality || "", document_number: d.fields?.documentNumber || "", expiry: d.fields?.expiry || "" }))));
+      form.append("documents_json", JSON.stringify(analyzed.map(d => ({ type: d.type, ocr_text: d.ocrText, ocr_confidence: d.ocrConfidence, name: d.fields?.name || "", dob: d.fields?.dob || "", nationality: "INDIAN", document_number: d.fields?.documentNumber || "", expiry: d.type === "Passport" ? (d.fields?.expiry || "") : "N/A" }))));
       const batchUrl = `${API_BASE_URL}/screening/batch`;
       let response;
       try {
@@ -656,7 +664,7 @@ function Result({ screening, setScreening, setPage }) {
     <div className="result-top">
       <div className="panel identity-card">
         <div className="doc-preview"><FileImage size={48} /><span>{screening.type}</span></div>
-        <div className="identity-data"><div className="eyebrow">IDENTITY RECORD</div><h3>{screening.person || "Not detected"}</h3><div className="data-grid"><Data label="Date of birth" value={screening.date_of_birth || "Not detected"} /><Data label="Document no." value={screening.number || "Not detected"} /><Data label="Nationality" value={screening.nationality || "Not detected"} /><Data label="Expiry" value={screening.expiry_date || "Not detected"} /></div></div>
+        <div className="identity-data"><div className="eyebrow">IDENTITY RECORD</div><h3>{screening.person || "Not detected"}</h3><div className="data-grid"><Data label="Date of birth" value={screening.date_of_birth || "Not detected"} /><Data label="Document no." value={screening.number || "Not detected"} /><Data label="Nationality" value="INDIAN" /><Data label="Expiry" value={(screening.type || "").toLowerCase() === "passport" ? (screening.expiry_date && screening.expiry_date !== "N/A" ? screening.expiry_date : "Not detected") : "N/A"} /></div></div>
       </div>
       <div className="panel decision-card"><div className="eyebrow">SYSTEM RECOMMENDATION</div><div className="decision-score"><div><span>VERIFICATION CONFIDENCE</span><strong>{Math.round(screening.confidence)}%</strong></div><div className={`risk-badge ${screening.risk.toLowerCase()}`}><span /> {screening.risk} RISK</div></div>{screening.score_band_label && <div className={`score-band-chip band-${(screening.score_band || "").toLowerCase().replace(/_/g, "-")}`}><strong>{screening.score_band_label}</strong><span>{screening.score_band_message}</span></div>}<p>{screening.result?.details || "Verification completed by BHARATSHIELD Verification Engine."}</p><DecisionPanel screeningId={screening.id} currentDecision={screening.recommendation} setScreening={setScreening} /></div>
     </div>
