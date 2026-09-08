@@ -175,8 +175,9 @@ app = FastAPI(title="BHARATSHIELD API", version="2.0.0")
 _CORS_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    # Vercel preview and production deployments
+    # Vercel production deployments
     "https://bharatshield.vercel.app",
+    "https://bharatshield-sih.vercel.app",
 ]
 # Allow all *.vercel.app preview URLs automatically.
 app.add_middleware(
