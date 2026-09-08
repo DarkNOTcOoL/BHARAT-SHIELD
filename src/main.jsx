@@ -15,11 +15,7 @@ import {
   Tooltip, BarChart, Bar, PieChart, Pie, Cell
 } from "recharts";
 import "./styles.css";
-
-// Set VITE_API_BASE at build time for production deployments where the frontend and API
-// are on different origins (e.g. Vercel frontend + Railway/Render backend).
-// Falls back to localhost:8000 for local development.
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { API_BASE_URL } from "./api/client";
 
 // Most scan-quality problems (low OCR confidence, weak Groq field extraction) come from
 // phone photos that are small, dim, low-contrast or slightly blurry JPEGs straight off a
@@ -110,8 +106,15 @@ function useApi(path, deps = []) {
   useEffect(() => {
     let cancelled = false;
     setState(s => ({ ...s, loading: true, error: "" }));
-    fetch(`${API_BASE}${path}`)
-      .then(r => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
+    const url = `${API_BASE_URL}${path}`;
+    fetch(url)
+      .then(r => {
+        if (!r.ok) {
+          if (r.status === 404) console.error(`[BHARATSHIELD] 404 Not Found: GET ${url}`);
+          throw new Error(`Request failed (${r.status})`);
+        }
+        return r.json();
+      })
       .then(data => { if (!cancelled) setState({ data, loading: false, error: "" }); })
       .catch(e => { if (!cancelled) setState({ data: null, loading: false, error: e.message || "Request failed" }); });
     return () => { cancelled = true; };
@@ -123,9 +126,13 @@ function useApi(path, deps = []) {
 // Fetches a single screening by its screening_id and navigates to its result view.
 // Used by History and Cases so their rows/cards actually open the real record.
 async function openScreening(id, setScreening, setPage) {
+  const url = `${API_BASE_URL}/screening/${id}`;
   try {
-    const r = await fetch(`${API_BASE}/screening/${id}`);
-    if (!r.ok) throw new Error("Screening not found");
+    const r = await fetch(url);
+    if (!r.ok) {
+      if (r.status === 404) console.error(`[BHARATSHIELD] 404 Not Found: GET ${url}`);
+      throw new Error("Screening not found");
+    }
     const data = await r.json();
     setScreening(data);
     setPage("screening");
@@ -514,12 +521,14 @@ function Screening({ screening, setScreening, setPage }) {
       analyzed.forEach((d) => form.append("files", d.file));
       form.append("mode", mode);
       form.append("documents_json", JSON.stringify(analyzed.map(d => ({ type: d.type, ocr_text: d.ocrText, ocr_confidence: d.ocrConfidence, name: d.fields?.name || "", dob: d.fields?.dob || "", nationality: d.fields?.nationality || "", document_number: d.fields?.documentNumber || "", expiry: d.fields?.expiry || "" }))));
+      const batchUrl = `${API_BASE_URL}/screening/batch`;
       let response;
       try {
-        response = await fetch(`${API_BASE}/screening/batch`, { method: "POST", body: form });
+        response = await fetch(batchUrl, { method: "POST", body: form });
       } catch (networkErr) {
         // TypeError is thrown when the request never reaches the server (offline, CORS
         // preflight blocked, connection refused, DNS failure, etc.).
+        console.error(`[BHARATSHIELD] Network error reaching: POST ${batchUrl}`, networkErr);
         const isNetworkError = networkErr instanceof TypeError;
         throw new Error(
           isNetworkError
@@ -528,6 +537,7 @@ function Screening({ screening, setScreening, setPage }) {
         );
       }
       if (!response.ok) {
+        if (response.status === 404) console.error(`[BHARATSHIELD] 404 Not Found: POST ${batchUrl}`);
         const body = await response.json().catch(() => ({}));
         throw new Error(body.detail || `Verification engine request failed (HTTP ${response.status}). Check that the backend is running correctly.`);
       }
@@ -689,9 +699,13 @@ function DecisionPanel({ screeningId, currentDecision, setScreening }) {
 
   const record = async (action) => {
     setSaving(true); setErr("");
+    const decisionUrl = `${API_BASE_URL}/screening/${screeningId}/decision?action=${action}`;
     try {
-      const r = await fetch(`${API_BASE}/screening/${screeningId}/decision?action=${action}`, { method: "POST" });
-      if (!r.ok) throw new Error("Decision API request failed");
+      const r = await fetch(decisionUrl, { method: "POST" });
+      if (!r.ok) {
+        if (r.status === 404) console.error(`[BHARATSHIELD] 404 Not Found: POST ${decisionUrl}`);
+        throw new Error("Decision API request failed");
+      }
       const data = await r.json();
       setDecision(action);
       setChanging(false);
