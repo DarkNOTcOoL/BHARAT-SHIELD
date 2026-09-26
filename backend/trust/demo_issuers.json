@@ -1,0 +1,8 @@
+{
+  "bs-demo-52": {
+    "issuer": "BHARATSHIELD SYNTHETIC DEMO ISSUER",
+    "enabled": true,
+    "public_key": "iLCAXFEBwTCz5-yhAfoF4Au6Fk4-Ocd-PCWKt1P0Mms",
+    "sha256": "cf4ca2c1babf18b2ee33dc7f2b6466e52229797827d43b13b3d4a67098ca0e66"
+  }
+}

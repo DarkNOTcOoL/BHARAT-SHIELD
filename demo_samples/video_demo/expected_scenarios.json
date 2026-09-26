@@ -1,0 +1,244 @@
+[
+  {
+    "file": "01_active_match.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7611",
+      "status": "ACTIVE"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7611"
+    },
+    "expected_registry": "MATCH",
+    "expected_score_after_correct_review": 0,
+    "expected_band": "LOW",
+    "degraded": false
+  },
+  {
+    "file": "02_second_match.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "ARUN EXAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7622",
+      "status": "ACTIVE"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "ARUN EXAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7622"
+    },
+    "expected_registry": "MATCH",
+    "expected_score_after_correct_review": 0,
+    "expected_band": "LOW",
+    "degraded": false
+  },
+  {
+    "file": "03_dob_conflict.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7633",
+      "status": "ACTIVE"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1999-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7633"
+    },
+    "expected_registry": "CONFLICT",
+    "expected_score_after_correct_review": 40,
+    "expected_band": "HIGH",
+    "degraded": false
+  },
+  {
+    "file": "04_expired.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2015-01-15",
+      "expiry": "2020-12-31",
+      "document_number": "REF7644",
+      "status": "EXPIRED"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2015-01-15",
+      "expiry": "2020-12-31",
+      "document_number": "REF7644"
+    },
+    "expected_registry": "EXPIRED",
+    "expected_score_after_correct_review": 40,
+    "expected_band": "HIGH",
+    "degraded": false
+  },
+  {
+    "file": "05_revoked.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7655",
+      "status": "REVOKED"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7655"
+    },
+    "expected_registry": "REVOKED",
+    "expected_score_after_correct_review": 90,
+    "expected_band": "CRITICAL",
+    "degraded": false
+  },
+  {
+    "file": "06_blocked.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7666",
+      "status": "BLOCKED"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7666"
+    },
+    "expected_registry": "BLOCKED",
+    "expected_score_after_correct_review": 100,
+    "expected_band": "CRITICAL",
+    "degraded": false
+  },
+  {
+    "file": "07_unknown_record.png",
+    "reference": null,
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7677"
+    },
+    "expected_registry": "NOT_FOUND",
+    "expected_score_after_correct_review": null,
+    "expected_band": "UNASSESSED",
+    "degraded": false
+  },
+  {
+    "file": "08_similar_name.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7688",
+      "status": "ACTIVE"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPEL",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7688"
+    },
+    "expected_registry": "REVIEW_REQUIRED",
+    "expected_score_after_correct_review": 10,
+    "expected_band": "REVIEW",
+    "degraded": false
+  },
+  {
+    "file": "09_poor_capture.png",
+    "reference": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7699",
+      "status": "ACTIVE"
+    },
+    "printed": {
+      "document_type": "Permit",
+      "name": "KAVYA SAMPLE",
+      "dob": "1998-07-21",
+      "nationality": "IND",
+      "issuer_country": "IND",
+      "issue_date": "2022-01-15",
+      "expiry": "2035-12-31",
+      "document_number": "REF7699"
+    },
+    "expected_registry": "MATCH",
+    "expected_score_after_correct_review": null,
+    "expected_band": "UNASSESSED",
+    "degraded": true
+  }
+]

@@ -1,0 +1,29 @@
+-- BHARATSHIELD v6.8 local schema overview.
+-- All Registry 2.0 identity/travel/alert/template/visual-feature rows are synthetic demo data.
+-- No government, immigration, authorized issuer or watchlist system is connected.
+--
+-- Main screening database (bharatshield.db):
+--   officers, reference_countries, document_rules, issuer_records, fraud_rules,
+--   watchlist_records (demo only), identity_records (legacy demo only),
+--   screenings, verification_results, biometric_templates, audit_logs, review_cases.
+--
+-- Synthetic registry database (registry.sqlite3):
+-- Legacy/backward-compatible document records:
+--   registry_records, registry_history
+-- Registry 2.2 relational + visual-template + travel-intelligence layer:
+--   registry2_identities
+--   registry2_document_links
+--   registry2_document_relations
+--   registry2_travel_events
+--   registry2_alerts
+--   registry2_issuer_templates
+--   registry2_template_features
+--   registry2_biometric_refs
+--   registry2_events
+--   registry2_meta
+--
+-- registry2_template_features binds a synthetic template feature code to an expected
+-- normalized zone, a bundled reference asset SHA-256, required/critical flags and a
+-- prototype local match threshold. Registry 2.0/2.1 mutations are recorded in
+-- registry2_events and included in the local tamper-evident bs_audit_chain.
+-- SQLite data itself is not encrypted.

@@ -1,0 +1,12 @@
+{
+  "id": "REG-DEMO52-001",
+  "version": 1,
+  "document_type": "Permit",
+  "document_number": "DEMO5201",
+  "name": "AARAV DEMO",
+  "dob": "2001-03-14",
+  "issue_date": "2024-01-01",
+  "expiry": "2035-12-31",
+  "nationality": "IND",
+  "issuer_country": "IND"
+}
