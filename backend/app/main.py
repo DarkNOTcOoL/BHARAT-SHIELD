@@ -770,6 +770,20 @@ def save_screening(db, file: UploadFile, data: bytes, metadata: dict, mode: str,
     safe_name = f"{uuid.uuid4().hex}_{Path(file.filename or 'document').name}"
     target = UPLOAD_DIR / safe_name
     target.write_bytes(DOCUMENT_CIPHER.encrypt(data))
+    # ── Demo / Presentation Mode: EARLY field injection ──────────────────────
+    # Must run BEFORE `fields` and `extraction_evidence()` are built so that
+    # the "Extraction source values" section is populated in the Review phase.
+    # Only metadata is patched here; the late interceptor (below) still handles
+    # the full analysis bypass with the 3-second scan simulation.
+    if demo_passport_mode.is_demo_passport(file.filename):
+        print(f"[BHARATSHIELD][DEMO_MODE] Early field injection for '{file.filename}'", flush=True)
+        _early_patch = demo_passport_mode.get_demo_metadata_patch()
+        for _pk, _pv in _early_patch.items():
+            if _pk not in metadata or not metadata[_pk]:
+                metadata[_pk] = _pv
+        # ocr_fields must always be the full demo map regardless of browser payload
+        metadata['ocr_fields'] = _early_patch['ocr_fields']
+    # ── End early field injection ─────────────────────────────────────────────
     fields = {key: metadata.get(key, '') for key in local_registry.COMPARE_FIELDS + local_registry.VISA_COMPARE_FIELDS}
     browser_notes={}
     try:

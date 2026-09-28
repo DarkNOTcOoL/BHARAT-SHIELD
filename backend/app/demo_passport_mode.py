@@ -40,6 +40,30 @@ _DEMO_FIELDS = {
     "issuing_authority": "MADURAI",
 }
 
+# ---------------------------------------------------------------------------
+# Flat ocr_fields dict -- snake_case keys only, matching COMPARE_FIELDS.
+# Capped at 15 entries to satisfy DocumentInput.ocr_fields max_length=15.
+# This is the payload that evidence_rules.extraction_evidence() reads from
+# metadata['ocr_fields'] to populate the "Extraction source values" section.
+# ---------------------------------------------------------------------------
+_DEMO_OCR_FIELDS: dict[str, str] = {
+    "name":              "SRIKRISHNAN NADAR SIVA SELVA KUMAR",
+    "dob":               "04/05/2006",
+    "nationality":       "INDIAN",
+    "document_number":   "H1591116",
+    "expiry":            "30/11/2034",
+    "issuer_country":    "IND",
+    "issue_date":        "01/12/2024",
+    "gender":            "M",
+    "issuing_authority": "MADURAI",
+    "place_of_birth":    "NAGERCOIL",
+    "place_of_issue":    "MADURAI",
+    "passport_reference": "",
+    "visa_type":         "",
+    "number_of_entries": "",
+    "valid_from":        "",
+}
+
 _DEMO_OCR_TEXT = (
     "REPUBLIC OF INDIA / PASSPORT\n"
     "Type: P | Country Code: IND | Passport No: H1591116\n"
@@ -60,6 +84,28 @@ def is_demo_passport(filename: str | None) -> bool:
     if not filename:
         return False
     return Path(filename).name.strip().lower() in DEMO_TRIGGER_FILENAMES
+
+
+def get_demo_metadata_patch() -> dict:
+    """Return a dict to be merged into `metadata` *before* `fields` and
+    `extraction_evidence()` are built in save_screening().
+
+    Injecting here ensures that:
+    - metadata['ocr_fields']  -> populated  -> parsed_fields are set
+    - metadata[field_key]     -> populated  -> fields dict is set
+    - metadata['ocr_text']    -> populated  -> raw OCR text is shown
+    - metadata['type']        -> 'Passport' -> correct document type
+
+    All of these flow naturally through the existing pipeline so that
+    evidence_rules.extraction_evidence() produces filled "Extraction
+    source values" instead of "Not extracted" labels.
+    """
+    patch: dict = dict(_DEMO_OCR_FIELDS)          # flat field keys
+    patch["ocr_fields"] = dict(_DEMO_OCR_FIELDS)  # nested for extraction_evidence
+    patch["ocr_text"]   = _DEMO_OCR_TEXT
+    patch["type"]       = "Passport"
+    patch["ocr_confidence"] = "96"
+    return patch
 
 
 def _lane(key, title, status, headline, evidence=None, *, optional=False, action=""):
