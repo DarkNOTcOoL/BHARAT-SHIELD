@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>BHARATSHIELD | Prototype Access</title>
+<link rel="icon" href="logo.png">
+<style>
+:root{font-family:Segoe UI,Arial,sans-serif;color:#13304b;background:#071c31;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-height:100svh;display:grid;place-items:center;padding:32px 20px;background:radial-gradient(ellipse at 8% 10%,#08524d 0,transparent 48%),radial-gradient(ellipse at 100% 100%,#213565 0,transparent 50%),#071c31}main{width:min(100%,960px);display:grid;grid-template-columns:1fr 1fr;overflow:hidden;border:1px solid #ffffff24;border-radius:26px;box-shadow:0 30px 100px #0005}.intro{padding:52px 42px;color:#fff;background:#ffffff04;display:flex;flex-direction:column;justify-content:space-between;gap:48px}.brand{display:flex;align-items:center;gap:14px}.brand img{width:60px;height:60px;object-fit:contain;border-radius:14px;background:white;padding:5px}.brand strong{font-size:21px;letter-spacing:1.5px}.brand small{display:block;font-size:12px;letter-spacing:2px;margin-top:7px;color:#b7ccdb}.eyebrow{color:#96d8cb;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:0 0 20px}h1{font-size:clamp(32px,5vw,48px);line-height:1.12;letter-spacing:-1.4px;margin:0 0 22px}h1 span{color:#ffb347}.intro p.description{font-size:17px;line-height:1.7;color:#cfdae5;margin:0}.foot{font-size:13px;color:#b3c4d4;letter-spacing:1px}.panel{padding:48px 38px;background:#f8fbff;position:relative}.panel:before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ed920c 0 33%,#fff 33% 66%,#19a685 66%)}h2{font-size:26px;letter-spacing:-.5px;margin:0 0 10px}.help{font-size:16px;line-height:1.6;color:#52687c;margin:0 0 30px}.credential{border:1px solid #dce5ee;background:white;border-radius:12px;padding:16px;margin-bottom:14px}.label{font-size:13px;color:#5b6c7c;font-weight:600;display:block;margin-bottom:10px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.row code{font-size:18px;color:#163c5b;overflow-wrap:anywhere;min-width:0}.copy{font:600 14px Segoe UI,Arial,sans-serif;color:#17618b;background:#eef5fa;border:1px solid #d9e6f0;border-radius:7px;padding:9px 12px;cursor:pointer;flex-shrink:0}.copy:hover{background:#dfedf6}.open{display:block;text-align:center;background:linear-gradient(110deg,#e98808,#f6ad28);color:#172d43;font-weight:750;text-decoration:none;border-radius:10px;padding:17px 12px;font-size:17px;margin-top:25px;box-shadow:0 5px 16px #e9981925}.open:hover{filter:brightness(1.06)}a:focus-visible,button:focus-visible{outline:3px solid #1376b4;outline-offset:4px}.url{display:block;text-align:center;font-size:13px;color:#5a7187;margin-top:14px;overflow-wrap:anywhere}.note{font-size:13px;line-height:1.6;color:#62778b;border-top:1px solid #dfe8ef;padding-top:22px;margin:26px 0 0}.status{min-height:20px;font-size:13px;color:#126954;margin:10px 0 0}@media(max-width:720px){main{grid-template-columns:1fr;max-width:470px}.intro{padding:30px;gap:28px}.panel{padding:32px 26px}.foot{display:none}h1{font-size:36px}.intro p.description{font-size:16px}.brand img{width:48px;height:48px}.brand strong{font-size:19px}}
+</style>
+</head>
+<body>
+<main>
+ <section class="intro" aria-labelledby="welcome">
+  <div class="brand"><img src="logo.png" alt="BHARATSHIELD logo"><div><strong>BHARATSHIELD</strong><small>PROTOTYPE ACCESS</small></div></div>
+  <div><p class="eyebrow">Team SASSI · SIH26188</p><h1 id="welcome">Document screening.<br><span>One place to begin.</span></h1><p class="description">Open the BHARATSHIELD prototype and sign in using the credentials provided here.</p></div>
+  <div class="foot">AI-BASED IDENTITY &amp; DOCUMENT SCREENING</div>
+ </section>
+ <section class="panel" aria-labelledby="access">
+  <h2 id="access">Access the prototype</h2>
+  <p class="help">Copy the login details, then open the screening console.</p>
+  <div class="credential"><span class="label">Officer ID</span><div class="row"><code id="officer">admin</code><button type="button" class="copy" data-copy="officer" aria-label="Copy Officer ID">Copy</button></div></div>
+  <div class="credential"><span class="label">Password</span><div class="row"><code id="password">sneh1124sneh</code><button type="button" class="copy" data-copy="password" aria-label="Copy password">Copy</button></div></div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <a class="open" href="https://bharatshield-hosted.vercel.app/" target="_blank" rel="noopener noreferrer">Open BHARATSHIELD</a>
+  <span class="url">bharatshield-hosted.vercel.app</span>
+  <p class="note">Opens in a new tab. The hosted prototype may take a little longer to respond after inactivity. Use synthetic sample documents for evaluation.</p>
+ </section>
+</main>
+<script>
+document.querySelectorAll('[data-copy]').forEach(button=>button.addEventListener('click',async()=>{
+ const element=document.getElementById(button.dataset.copy);
+ try{await navigator.clipboard.writeText(element.textContent);document.getElementById('status').textContent=button.dataset.copy==='officer'?'Officer ID copied.':'Password copied.';}
+ catch{const range=document.createRange();range.selectNodeContents(element);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);document.getElementById('status').textContent='Text selected. Copy it manually.';}
+}));
+</script>
+</body>
+</html>
